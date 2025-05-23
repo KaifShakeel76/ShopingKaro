@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shoppingkaro-service
+  namespace: shopingkaro
+spec:
+  selector:
+    app: shoppingkaro
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP

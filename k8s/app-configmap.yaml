@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: shopingkaro
+data:
+  MONGO_DB_URI: mongodb://mongoadmin:password@mongo:27017/admin

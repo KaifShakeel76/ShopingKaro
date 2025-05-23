@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  app:
+    build: .
+    container_name: shoppingkaro
+    depends_on:
+      - mongo
+    environment:
+      MONGO_DB_URI: mongodb://mongoadmin:password@mongo:27017/admin
+    ports:
+      - "3000:3000"
+    restart: always
+
+volumes:
+  mongo-data:

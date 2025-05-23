@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoppingkaro
+  namespace: shopingkaro
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shoppingkaro
+  template:
+    metadata:
+      labels:
+        app: shoppingkaro
+    spec:
+      containers:
+        - name: shoppingkaro
+          image: kaifshakeel/shopingkaro-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MONGO_DB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: JWT_SECRET
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
