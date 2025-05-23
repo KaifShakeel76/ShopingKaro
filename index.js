@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 // const mongoConnect = require("./helper/database").mongoConnect;
 const User = require("./models/user");
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const mongo_DB_URI = process.env.MONGO_DB_URI;
 
 const app = express();
@@ -31,12 +31,16 @@ app.use((req, res, next) => {
     });
 });
 
+app.get('/healthz', (req, res) => res.status(200).send('OK'));
+
 app.use("/admin", adminRoutes);
 
 app.use(shopRoutes);
 
 app.use(PageNotFound);
 
+
+console.log("MONGO_URI:", mongo_DB_URI);
 mongoose
   .connect(mongo_DB_URI)
   .then((result) => {
