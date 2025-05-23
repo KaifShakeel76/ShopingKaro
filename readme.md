@@ -180,6 +180,15 @@ kubectl get ingress
 - HPA thresholds configured to trigger additional replicas during high load  
 - MongoDB storage size and IOPS benchmarked to avoid bottlenecks
 
+## Finished Working Screenshots
+
+![Alt text](images/Picture3.png)
+![Alt text](images/Picture4.png)
+![Alt text](images/Picture5.png)
+![Alt text](images/Picture6.png)
+![Alt text](images/Picture7.png)
+![Alt text](images/Picture9.png)
+![Alt text](images/Picture8.png)
 
 ## Contributing
 
