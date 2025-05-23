@@ -7,6 +7,7 @@ ShopingKaro is a web application developed in Node.js that allows users to easil
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
+- [Optimization](#optimization)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -55,6 +56,130 @@ ShopingKaro is a web application developed in Node.js that allows users to easil
 Open your browser and visit http://localhost:3000 to access ShopingKaro.
 
 Explore the website, add products to your cart, and enjoy a seamless shopping experience.
+
+## Deliverables
+
+### Optimization
+
+- Switched to `node:18-slim` for a minimal base image  
+- Used multi-stage builds to separate build and runtime layers  
+- Used `.dockerignore` to exclude `node_modules`, logs, and unnecessary files  
+- Used `npm ci` for faster, cache-friendly, and deterministic installs  
+- Omitted dev dependencies using `NODE_ENV=production`  
+- Used a non-root user for security
+
+### Comparison with baseline image size
+
+![Alt text](images/Picture1.png)
+
+### How to build and run the image locally
+
+```bash
+# Build the Docker image
+docker build -t shoppingkaro-optimized .
+
+# Run the Docker container
+docker run -p 3000:3000 optimized
+```
+
+
+## Usage
+
+All the manifests are present in the k8s directory. For easy understanding, I've created different manifests in order to make it easy for beginners to understand easily.
+
+### Apply k8s manifests
+
+```bash
+kubectl apply -f k8s/
+```
+
+### Access the Running Service - If using NodePort
+
+```bash
+kubectl get svc
+# Then open in browser: http://<NodeIP>:<NodePort>
+```
+
+If using Ingress
+
+```bash
+kubectl get ingress
+# Then open in browser: http://<Ingress Host or IP>
+```
+
+## Minimal Flow Diagram
+
+![Alt text](images/Picture2.png)
+
+## Justification of Architectural Choices
+
+### Workload Types
+
+1. **Node.js App**: Used `Deployment` for stateless, horizontally scalable services.  
+2. **MongoDB**: Used `StatefulSet` to maintain persistent identity and stable storage.
+
+### Networking and Scalability Decisions
+
+1. Used `Service (ClusterIP)` for internal MongoDB access  
+2. Used `Ingress` for external access to Node.js app  
+3. Enabled `HorizontalPodAutoscaler (HPA)` for app scalability based on CPU usage
+
+### Security Measures
+
+1. Dockerfile runs as non-root, minimizes attack surface  
+2. `.dockerignore` and no dev dependencies reduce vulnerabilities  
+3. Kubernetes `Secrets` used for sensitive data (DB credentials, JWT secrets)  
+4. MongoDB not exposed externally
+
+### Challenges Faced and Resolutions
+
+1. **MongoDB Connection Issue**  
+   - **Issue**: MongoDB wouldn't connect due to missing DNS or incorrect credentials  
+   - **Resolution**: Defined correct internal service name and injected credentials via `Secrets`
+
+2. **Image Layer Caching Issue**  
+   - **Issue**: Image layer caching wasn’t working  
+   - **Resolution**: Re-ordered Dockerfile layers and used `npm ci`
+
+3. **Liveness Probe Restarts**  
+   - **Issue**: Liveness probe caused unnecessary restarts  
+   - **Resolution**: Tuned probe parameters (`initialDelaySeconds`, `timeoutSeconds`, `failureThreshold`)
+
+## AWS Cloud Deployment Readiness
+
+### AWS Services
+
+1. `EKS`: To run Kubernetes workloads  
+2. `RDS` (Mongo-compatible or self-hosted on EC2): For MongoDB  
+3. `S3`: For static assets and backup  
+4. `ALB + Ingress Controller`: For external traffic routing  
+5. `CloudWatch`: For centralized logging and monitoring
+
+## Load Testing Strategy
+
+### Tool Choice and Why
+
+- Chose `k6` for its developer-friendly scripting in JavaScript, good CLI UX, and CI integration.
+
+### Test Design
+
+- Simulate 100 RPS with ramp-up and ramp-down  
+- Test endpoints: `/api/products`, `/api/users/login`, `/api/orders`  
+- Duration: 10 minutes with varying concurrency levels
+
+### Metrics Monitored
+
+- Response time (P95 latency)  
+- Error rate  
+- CPU/memory usage of pods  
+- Throughput (requests per second)
+
+### Scaling Decisions
+
+- Based on peak CPU/memory, adjusted resource requests/limits  
+- HPA thresholds configured to trigger additional replicas during high load  
+- MongoDB storage size and IOPS benchmarked to avoid bottlenecks
+
 
 ## Contributing
 
